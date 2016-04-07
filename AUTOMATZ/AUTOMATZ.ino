@@ -1,6 +1,7 @@
 /* Markus Automat Kleben 2016-02-28
-*  Code der gegangen ist, bis der zweite Motortreiber leichten defekt aufwies 
-*
+*  Version 0-1-3
+*  wie vorgaenger, aber mit externer rampenversion...
+*  noch nicht getestet.... aber compiliert
 */
 
 // LEDs
@@ -51,7 +52,7 @@ void StartFun();
 void SchnellFun();
 void KlebenFun();
 
-//void myRamp(int SollSpeed);
+void StartRamp(int MotorSpeed);
 
 void setup() {
   // LEDs init
@@ -215,7 +216,8 @@ void SchnellFun() {
   else {
     MotorSpeed = Speed_Langsam;
   }
-
+  StartRamp(MotorSpeed);
+/*
   // RAMPE
   for (int i = 150; i > MotorSpeed; i--)
   {
@@ -230,7 +232,7 @@ void SchnellFun() {
       }
      }
    }
-
+*/
  
     // tasten event
     if ( ! digitalRead(START))
@@ -279,4 +281,23 @@ void KlebenFun() {
 
   Serial.println("exit Kleben");
 }
+
+void StartRamp(int MotorSpeed)
+{
+  // RAMPE
+  for (int i = 150; i > MotorSpeed; i--)
+  {
+    for (int j = 0; j < 10; j++)
+    {
+      for( int k = 0; k < 40; k++)
+      {
+      digitalWrite(STEP, HIGH);
+      delayMicroseconds(i - j);
+      digitalWrite(STEP, LOW);
+      delayMicroseconds(i - j);
+      }
+     }
+   }
+}
+
 
