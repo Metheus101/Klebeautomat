@@ -138,7 +138,8 @@ void StopFun() {
   digitalWrite(FEHLER, LOW);
 
   while (! digitalRead(STOP)) {}; // warten bis taster == 1
-  delay(100);
+  Serial.println("exit STOP");
+  delay(100);  
 }
 
 void HubFun() {
@@ -148,9 +149,18 @@ void HubFun() {
 }
 void DruckFun() {
   Serial.println("StopFun!!!!");
-
-
+  digitalWrite(VENTIL_DRUCK, HIGH);
+  digitalWrite(BEREIT, LOW);
+  digitalWrite(MSCHNELL, LOW);
+  digitalWrite(MKLEBEN, LOW);
+  
+  while( ! digitalRead(DRUCK)) {}; // warten bis taster == 1
+  delay(100);
+  
+  digitalWrite(VENTIL_DRUCK, LOW);
+  Serial.println("exit Druck");
 }
+
 void SchnellFun() {
   Serial.println("StopFun!!!!");
 
