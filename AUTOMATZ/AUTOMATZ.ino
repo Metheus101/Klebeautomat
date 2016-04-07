@@ -33,8 +33,11 @@
 #define MS1    A4
 #define ENABLE A5
 
+#define Speed_Schnell 50
+#define Speed_Langsam 700
+
 uint8_t myLEDS[LED_ANZ] = {BEREIT, FEHLER, MSCHNELL, MKLEBEN};
-uint8_t myInput[TASTER_ANZ] = {STOP, START, HUB, DRUCK, SPEED, MODUS};
+uint8_t myInput[TASTER_ANZ] = {STOP, START, HUB, DRUCK, MODUS, SPEED};
 
 
 // Global Vars
@@ -44,8 +47,11 @@ bool StateSpeed = false;
 void StopFun();
 void HubFun();
 void DruckFun();
+void StartFun();
 void SchnellFun();
 void KlebenFun();
+
+//void myRamp(int SollSpeed);
 
 void setup() {
   // LEDs init
@@ -88,6 +94,8 @@ void setup() {
 void loop() {
   // Schalter einlesen
   StateModus = digitalRead(MODUS);
+  StateSpeed = digitalRead(5);
+  
   if (StateModus) {
     digitalWrite(MSCHNELL, HIGH);
     digitalWrite(MKLEBEN, LOW);
@@ -105,10 +113,8 @@ void loop() {
 
   else if ( ! digitalRead(HUB)) HubFun();
 
-  else if ( ! digitalRead(START)) {
-    if ( StateModus) SchnellFun(); // ist schnell!!
-    else KlebenFun();              // ist kleben!
-  }
+  else if ( ! digitalRead(START)) StartFun();
+
   else delay(100);
 }
 
@@ -139,37 +145,124 @@ void StopFun() {
 
   while (! digitalRead(STOP)) {}; // warten bis taster == 1
   Serial.println("exit STOP");
-  delay(100);  
+  delay(100);
 }
 
 void HubFun() {
-  Serial.println("StopFun!!!!");
+  Serial.println("HUBFun!!!!");
+  digitalWrite(VENTIL_HUB, HIGH);
+  digitalWrite(MKLEBEN, HIGH);
+  digitalWrite(MSCHNELL, HIGH);
+  digitalWrite(BEREIT, LOW);
 
+  while (! digitalRead(HUB)) {}; // warten bis taster == 1
+  delay(100);
+  while (digitalRead(HUB)) {};
 
+  digitalWrite(VENTIL_HUB, LOW);
+  digitalWrite(MKLEBEN, LOW);
+  digitalWrite(MSCHNELL, LOW);
+  digitalWrite(BEREIT, LOW);
+
+  while (! digitalRead(HUB)) {}; // warten bis taster == 1
+
+  Serial.println("exit HUB");
 }
 void DruckFun() {
-  Serial.println("StopFun!!!!");
+  Serial.println("DRUCKFun!!!!");
   digitalWrite(VENTIL_DRUCK, HIGH);
   digitalWrite(BEREIT, LOW);
   digitalWrite(MSCHNELL, LOW);
   digitalWrite(MKLEBEN, LOW);
-  
-  while( ! digitalRead(DRUCK)) {}; // warten bis taster == 1
+
+  while ( ! digitalRead(DRUCK)) {}; // warten bis taster == 1
   delay(100);
-  
+
   digitalWrite(VENTIL_DRUCK, LOW);
   Serial.println("exit Druck");
 }
 
+void StartFun() {
+  Serial.println("StartFun!!!");
+  // Motor init
+  digitalWrite(MS3, HIGH);
+  digitalWrite(MS2, HIGH);
+  digitalWrite(MS1, HIGH);
+  digitalWrite(RESET, HIGH);
+  digitalWrite(ENABLE, LOW);
+
+  while (! digitalRead(START)) {};  // warten bis taster == 1
+
+  if (StateModus) SchnellFun();     // ist schnell!!
+  else KlebenFun();                 // ist kleben!!!
+
+  Serial.println("exit Start!!");
+}
+
 void SchnellFun() {
-  Serial.println("StopFun!!!!");
+  int MotorSpeed;
+  Serial.println("SchnellFUN!!!");
+  Serial.print("StateSpeed: ");
+  Serial.println(StateSpeed);  
+  if (StateSpeed) MotorSpeed = Speed_Schnell;
+  else {
+    MotorSpeed = Speed_Langsam;
+  }
 
-
+  // RAMPE
+  for (int i = 0; i < MotorSpeed; i++)
+  {
+    //Serial.println("in der for schleife");
+    digitalWrite(STEP, HIGH);
+    delayMicroseconds(myRamp[i]);
+    digitalWrite(STEP, LOW);
+    delayMicroseconds(myRamp[i]);
+    
+    // tasten event
+    if ( ! digitalRead(START))
+    {
+      Serial.println("tasten event alpha");
+      digitalWrite(RESET, LOW);
+      digitalWrite(ENABLE, HIGH);
+      while (! digitalRead(START)) {};  // warten bis taster == 1
+      return;
+    }
+    if ( ! digitalRead(STOP))
+    {
+      Serial.println("tasten event beta");
+      StopFun();
+      return;
+    }
+  }
+  //Serial.println("Motor läuft in der whielloop");
+  while(true){
+    digitalWrite(STEP, HIGH);
+    delayMicroseconds(MotorSpeed);
+    digitalWrite(STEP, LOW);
+    delayMicroseconds(MotorSpeed);
+    
+    // tasten event
+    if ( ! digitalRead(START))
+    {
+      Serial.println("tasten event gamma");
+      digitalWrite(RESET, LOW);
+      digitalWrite(ENABLE, HIGH);
+      while (! digitalRead(START)) {};  // warten bis taster == 1
+      return;
+    }
+    if ( ! digitalRead(STOP))
+    {
+      Serial.println("tasten event delta");
+      StopFun();
+      return;
+    }
+    
+  }
+  Serial.println("exit Schnell");
 }
 void KlebenFun() {
-  Serial.println("StopFun!!!!");
+  Serial.println("KlebenFun!!!");
 
-
+  Serial.println("exit Kleben");
 }
-
 
