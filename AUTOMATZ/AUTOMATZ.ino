@@ -34,8 +34,9 @@
 #define MS1    A4
 #define ENABLE A5
 
-#define Speed_Schnell 40
-#define Speed_Langsam 700
+#define Speed_Schnell 30
+#define Speed_Langsam 300
+#define Hub_delay 2000
 
 uint8_t myLEDS[LED_ANZ] = {BEREIT, FEHLER, MSCHNELL, MKLEBEN};
 uint8_t myInput[TASTER_ANZ] = {STOP, START, HUB, DRUCK, MODUS, SPEED};
@@ -98,7 +99,7 @@ void setup() {
     }
     */
 }
-
+//-------------------------------------LOOP---------------------------------
 void loop() {
   // Schalter einlesen
   StateModus = digitalRead(MODUS);
@@ -126,7 +127,7 @@ void loop() {
   else delay(100);
 }
 
-
+//-------------------------------------Funktion STOP---------------------------------
 void StopFun() {
   Serial.println("StopFun!!!!");
 
@@ -155,7 +156,7 @@ void StopFun() {
   Serial.println("exit STOP");
   delay(100);
 }
-
+//-------------------------------------Funktion Hub---------------------------------
 void HubFun() {
   Serial.println("HUBFun!!!!");
   digitalWrite(VENTIL_HUB, HIGH);
@@ -176,6 +177,7 @@ void HubFun() {
 
   Serial.println("exit HUB");
 }
+//-------------------------------------Funktion Druck---------------------------------
 void DruckFun() {
   Serial.println("DRUCKFun!!!!");
   digitalWrite(VENTIL_DRUCK, HIGH);
@@ -189,7 +191,7 @@ void DruckFun() {
   digitalWrite(VENTIL_DRUCK, LOW);
   Serial.println("exit Druck");
 }
-
+//-------------------------------------Funktion Start---------------------------------
 void StartFun() {
   Serial.println("StartFun!!!");
   // Motor init
@@ -206,7 +208,7 @@ void StartFun() {
 
   Serial.println("exit Start!!");
 }
-
+//-------------------------------------Funktion Schnell---------------------------------
 void SchnellFun() {
   int MotorSpeed;
   Serial.println("SchnellFUN!!!");
@@ -215,25 +217,9 @@ void SchnellFun() {
   if (StateSpeed) MotorSpeed = Speed_Schnell;
   else {
     MotorSpeed = Speed_Langsam;
-  }
+       }
   StartRamp(MotorSpeed);
-/*
-  // RAMPE
-  for (int i = 150; i > MotorSpeed; i--)
-  {
-    for (int j = 0; j < 10; j++)
-    {
-      for( int k = 0; k < 40; k++)
-      {
-      digitalWrite(STEP, HIGH);
-      delayMicroseconds(i - j);
-      digitalWrite(STEP, LOW);
-      delayMicroseconds(i - j);
-      }
-     }
-   }
-*/
- 
+
     // tasten event
     if ( ! digitalRead(START))
     {
@@ -250,7 +236,6 @@ void SchnellFun() {
       return;
     }
   
-  //Serial.println("Motor läuft in der whielloop");
   while(true){
     digitalWrite(STEP, HIGH);
     delayMicroseconds(MotorSpeed);
@@ -276,12 +261,20 @@ void SchnellFun() {
   }
   Serial.println("exit Schnell");
 }
+//-------------------------------------Funktion Kleben---------------------------------
 void KlebenFun() {
   Serial.println("KlebenFun!!!");
+  // Motor init
+  digitalWrite(MS3, HIGH);
+  digitalWrite(MS2, HIGH);
+  digitalWrite(MS1, HIGH);
+  digitalWrite(RESET, HIGH);
+  digitalWrite(ENABLE, LOW);
 
+  
   Serial.println("exit Kleben");
 }
-
+//-------------------------------------Rampe-----------------------------------
 void StartRamp(int MotorSpeed)
 {
   // RAMPE
