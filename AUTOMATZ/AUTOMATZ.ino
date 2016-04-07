@@ -34,11 +34,18 @@
 #define MS1    A4
 #define ENABLE A5
 
+//----------------------Einstellungen--------------------------------
 #define Speed_Schnell 1
 #define Speed_Langsam 30
 #define Speed_Kleben 1563
 #define Hub_delay 2000
+#define Rampecount 150
+#define Delkleb0 300
+#define Delkleb1 500
+#define Delkleb2 150    //Zeitraum zwischen Druck und losfahren
+#define Delkleb3 200    //Zeitraum zwischen Druck weg und hochfahren
 
+//--------------------------------------------------------
 
 uint8_t myLEDS[LED_ANZ] = {BEREIT, FEHLER, MSCHNELL, MKLEBEN};
 uint8_t myInput[TASTER_ANZ] = {STOP, START, HUB, DRUCK, MODUS, SPEED};
@@ -279,15 +286,15 @@ void KlebenFun() {
   digitalWrite(RESET, HIGH);
   digitalWrite(ENABLE, LOW);
   
-  delay(2000);
+  delay(Delkleb0);
   //Runterfahren 
   digitalWrite(VENTIL_HUB, HIGH);
 
-  delay(2000);
+  delay(Delkleb1);
 
   digitalWrite(VENTIL_DRUCK, HIGH);
 
-  delay(500);
+  delay(Delkleb2);
 
   for(int i=0;i<3200;i++)
     {
@@ -297,6 +304,7 @@ void KlebenFun() {
       delayMicroseconds(Speed_Kleben);
     }
    digitalWrite(VENTIL_DRUCK, LOW);
+   delay(Delkleb3);
    digitalWrite(VENTIL_HUB, LOW);
 
    
@@ -335,7 +343,7 @@ void StartRamp(int MotorSpeed)
       return;
     }
     
-    for( int k = 0; k < 100;k++)
+    for( int k = 0; k < Rampecount;k++)
     {
     digitalWrite(STEP, HIGH);
     delayMicroseconds(i);
