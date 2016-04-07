@@ -1,5 +1,5 @@
 /* Markus Automat Kleben 2016-02-28
-*
+*  Code der gegangen ist, bis der zweite Motortreiber leichten defekt aufwies 
 *
 */
 
@@ -33,7 +33,7 @@
 #define MS1    A4
 #define ENABLE A5
 
-#define Speed_Schnell 50
+#define Speed_Schnell 40
 #define Speed_Langsam 700
 
 uint8_t myLEDS[LED_ANZ] = {BEREIT, FEHLER, MSCHNELL, MKLEBEN};
@@ -80,6 +80,7 @@ void setup() {
   // Serial Interface
   Serial.begin(9600);
   Serial.println("Init Automat");
+  
   for (uint8_t i = 0; i < LED_ANZ; i++)  digitalWrite(myLEDS[i], HIGH);
   delay(1000);
   for (uint8_t i = 0; i < LED_ANZ; i++)  digitalWrite(myLEDS[i], LOW);
@@ -87,8 +88,14 @@ void setup() {
 
   // Hub schalten - hochfahren
   digitalWrite(VENTIL_HUB, HIGH);
-
-
+  
+/*  Serial.println("RECHNERN");
+  for(int i = 1; i < 51; i++)
+    {
+      myRamp[i] = (920 /i) + 80;
+      Serial.println(myRamp[i]);
+    }
+    */
 }
 
 void loop() {
@@ -210,14 +217,21 @@ void SchnellFun() {
   }
 
   // RAMPE
-  for (int i = 0; i < MotorSpeed; i++)
+  for (int i = 150; i > MotorSpeed; i--)
   {
-    //Serial.println("in der for schleife");
-    digitalWrite(STEP, HIGH);
-    delayMicroseconds(myRamp[i]);
-    digitalWrite(STEP, LOW);
-    delayMicroseconds(myRamp[i]);
-    
+    for (int j = 0; j < 10; j++)
+    {
+      for( int k = 0; k < 40; k++)
+      {
+      digitalWrite(STEP, HIGH);
+      delayMicroseconds(i - j);
+      digitalWrite(STEP, LOW);
+      delayMicroseconds(i - j);
+      }
+     }
+   }
+
+ 
     // tasten event
     if ( ! digitalRead(START))
     {
@@ -233,7 +247,7 @@ void SchnellFun() {
       StopFun();
       return;
     }
-  }
+  
   //Serial.println("Motor läuft in der whielloop");
   while(true){
     digitalWrite(STEP, HIGH);
