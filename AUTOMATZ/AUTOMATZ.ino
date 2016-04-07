@@ -36,7 +36,9 @@
 
 #define Speed_Schnell 30
 #define Speed_Langsam 300
+#define Speed_Kleben 1563
 #define Hub_delay 2000
+
 
 uint8_t myLEDS[LED_ANZ] = {BEREIT, FEHLER, MSCHNELL, MKLEBEN};
 uint8_t myInput[TASTER_ANZ] = {STOP, START, HUB, DRUCK, MODUS, SPEED};
@@ -78,6 +80,10 @@ void setup() {
   pinMode(MS2,    OUTPUT);
   pinMode(MS1,    OUTPUT);
 
+//Hub ist oben
+  digitalWrite(VENTIL_DRUCK, LOW);
+  digitalWrite(VENTIL_HUB, LOW);
+
 
   // Serial Interface
   Serial.begin(9600);
@@ -88,8 +94,8 @@ void setup() {
   for (uint8_t i = 0; i < LED_ANZ; i++)  digitalWrite(myLEDS[i], LOW);
 
 
-  // Hub schalten - hochfahren
-  digitalWrite(VENTIL_HUB, HIGH);
+
+  
   
 /*  Serial.println("RECHNERN");
   for(int i = 1; i < 51; i++)
@@ -265,11 +271,44 @@ void SchnellFun() {
 void KlebenFun() {
   Serial.println("KlebenFun!!!");
   // Motor init
+  digitalWrite(BEREIT, LOW);
+  
   digitalWrite(MS3, HIGH);
   digitalWrite(MS2, HIGH);
   digitalWrite(MS1, HIGH);
   digitalWrite(RESET, HIGH);
   digitalWrite(ENABLE, LOW);
+  
+  delay(2000);
+  //Runterfahren 
+  digitalWrite(VENTIL_HUB, HIGH);
+
+  delay(2000);
+
+  digitalWrite(VENTIL_DRUCK, HIGH);
+
+  delay(500);
+
+  for(int i=0;i<3200;i++)
+    {
+      digitalWrite(STEP, HIGH);
+      delayMicroseconds(Speed_Kleben);
+      digitalWrite(STEP, LOW);
+      delayMicroseconds(Speed_Kleben);
+    }
+   digitalWrite(VENTIL_DRUCK, LOW);
+   digitalWrite(VENTIL_HUB, LOW);
+
+   
+   //Motor ausschalten
+   digitalWrite(MS3, LOW);
+   digitalWrite(MS2, LOW);
+   digitalWrite(MS1, LOW);
+   digitalWrite(RESET, LOW);
+   digitalWrite(ENABLE, HIGH);
+    
+
+  
 
   
   Serial.println("exit Kleben");
