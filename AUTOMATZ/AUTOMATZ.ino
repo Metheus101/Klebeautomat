@@ -34,8 +34,8 @@
 #define MS1    A4
 #define ENABLE A5
 
-#define Speed_Schnell 30
-#define Speed_Langsam 300
+#define Speed_Schnell 1
+#define Speed_Langsam 30
 #define Speed_Kleben 1563
 #define Hub_delay 2000
 
@@ -317,18 +317,31 @@ void KlebenFun() {
 void StartRamp(int MotorSpeed)
 {
   // RAMPE
-  for (int i = 150; i > MotorSpeed; i--)
+  for (int i = 150; i > MotorSpeed;i--)
   {
-    for (int j = 0; j < 10; j++)
+    // tasten event
+    if ( ! digitalRead(START))
     {
-      for( int k = 0; k < 40; k++)
-      {
-      digitalWrite(STEP, HIGH);
-      delayMicroseconds(i - j);
-      digitalWrite(STEP, LOW);
-      delayMicroseconds(i - j);
-      }
-     }
+      //Serial.println("tasten event alpha");
+      digitalWrite(RESET, LOW);
+      digitalWrite(ENABLE, HIGH);
+      while (! digitalRead(START)) {};  // warten bis taster == 1
+      return;
+    }
+    if ( ! digitalRead(STOP))
+    {
+      //Serial.println("tasten event beta");
+      StopFun();
+      return;
+    }
+    
+    for( int k = 0; k < 100;k++)
+    {
+    digitalWrite(STEP, HIGH);
+    delayMicroseconds(i);
+    digitalWrite(STEP, LOW);
+    delayMicroseconds(i);
+   }
    }
 }
 
